@@ -1,4 +1,3 @@
-
 ////
 ////FUNTIONS
 ////
@@ -223,9 +222,7 @@ function getFrequenciaPorAno(entry) {
 
 ////Funtion
 function atualizarStatus(entry) {
-  entry.set("status", null);
-  entry.set("statusAtrasado", null);
-  entry.set("statusAniversario", null);
+  entry.set("statusSelecionado", null);
 
   var dataField = entry.field("Data da próxima ação");
   var dataProximaAcao = dataField == null ? null : moment(dataField);
@@ -233,34 +230,28 @@ function atualizarStatus(entry) {
   if( entry.field("checkContatoSelecionado") != 1 || dataProximaAcao == null)
     return;
 
-  //statusHoje 
+  //Dias
   var hoje = moment();
   var ontem = moment();
-  var amanha = moment();
   ontem.subtract(1,"d");
-  amanha.add(1,"d");
+  var text = "";
   if( comparaData(dataProximaAcao, hoje) == 0 ){
-    entry.set("statusHoje", "HOJE");
+    text = "HOJE";
   } else if( comparaData(dataProximaAcao, ontem) == 0 ){
-    entry.set("statusHoje", "Ontem");
-  } else if( comparaData(dataProximaAcao, amanha) == 0 ){
-    entry.set("statusHoje", "Amanhã");
-  }
-
-  //statusAtrasado 
-  if( comparaData(dataProximaAcao, hoje) < 0 ){
+    text = "🚫 Ontem";
+  } else if( comparaData(dataProximaAcao, ontem) < 0 ){
     var dias = hoje.diff(dataProximaAcao, "days");
-    var text = "Atrasado " + dias + ( dias == 1 ? " dia" : " dias" );
-    entry.set("statusAtrasado", text);
+    text = "🚫 Atrasado " + dias + " dias";
   }
 
-  //statusAniversario 
+  //Aniversario 
   var proximoNiver = getProximaDataAniversario(entry);
   if( proximoNiver != null && comparaData(proximoNiver, hoje) == 0 ){
     var idade = getIdade(entry);
-    var text = "Feliz aniversário!  " + idade + ( idade == 1 ? " aninho" : " anos" );
-    entry.set("statusAniversario", text);
+    text += ", " + idade + ( idade == 1 ? " aninho" : " anos" ) + "!  🎂";
   }
+
+  entry.set("statusSelecionado", text);
 }
 
 ////Funtion
