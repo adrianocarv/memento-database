@@ -223,14 +223,14 @@ function getFrequenciaPorAno(entry) {
 
 ////Funtion
 function atualizarStatus(entry) {
-  entry.set("statusHoje", null);
+  entry.set("status", null);
   entry.set("statusAtrasado", null);
   entry.set("statusAniversario", null);
 
   var dataField = entry.field("Data da próxima ação");
   var dataProximaAcao = dataField == null ? null : moment(dataField);
 
-  if( dataProximaAcao == null)
+  if( entry.field("checkContatoSelecionado") != 1 || dataProximaAcao == null)
     return;
 
   //statusHoje 
