@@ -226,20 +226,18 @@ function atualizarStatus(entry) {
   if( comparaData(dataProximaAcao, hoje) == 0 ){
     text = "HOJE";
   } else if( comparaData(dataProximaAcao, ontem) == 0 ){
-    text = "? Ontem";
+    text = "🚫 Ontem";
   } else if( comparaData(dataProximaAcao, hoje) < 0 ){
     var dias = hoje.diff(dataProximaAcao, "days");
-    text = "? Atrasado " + dias + " dias";
+    text = "🚫 Atrasado " + dias + " dias";
   }
 
   //Aniversário 
   var proximoNiver = getProximaDataAniversario(entry);
   if( proximoNiver != null && comparaData(proximoNiver, hoje) == 0 ){
     var idade = getIdade(entry);
-    text += ", " + idade + ( idade == 1 ? " aninho" : " anos" ) + "!  ?";
+    text += ", " + idade + ( idade == 1 ? " aninho" : " anos" ) + "!  🎂";
   }
-
-  entry.set("statusSelecionado", text);
 }
 
 ////Funtion
