@@ -80,8 +80,7 @@ function entryConsistency(entry) {
 
 
 ////Funtion
-function generalCheck(){
-  var entries = lib().entries();
+function generalCheck(entries){
   var codigosArrayLib = [];
 
   for (var i = 0; i < entries.length; i++) {
