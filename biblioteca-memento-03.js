@@ -19,6 +19,44 @@ function uniqueCode(codeFieldName) {
   }
 }
 
+
+////Funtion
+function toReturn() {
+  if( entry().field("Situação") == 'Disponível' ){
+    entry().set("Emprestado para", null);
+    entry().set("Data de empréstimo", null);
+    entry().set("Paradeiro", null);
+    entry().set("Histórico do paradeiro", null);
+  }
+
+  //Paradeiro
+  if( entry().field("Paradeiro").length > 0){
+    var historico = entry().field("Histórico do paradeiro");
+    var registro = todayAsString() + ". " + entry().field("Paradeiro");
+    var historico = registro + "\n" + historico;
+    entry().set("Histórico do paradeiro", historico);
+  }
+}
+
+
+////Funtion
+function todayAsString() {
+  var today = new Date();
+  var dd = today.getDate();
+  var mm = today.getMonth()+1; //January is 0!
+  var yyyy = today.getFullYear();
+
+  if(dd<10) {
+      dd = '0'+dd
+  } 
+  if(mm<10) {
+      mm = '0'+mm
+  } 
+  today = dd + '/' + mm + '/' + yyyy;
+  return today;
+}
+
+
 ////Funtion
 function entryConsistency(entry) {
 
