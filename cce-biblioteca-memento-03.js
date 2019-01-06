@@ -87,7 +87,7 @@ function entryConsistency(entry, isContactField) {
 
 
 ////Funtion
-function generalCheck(entries, isContactField, useSequenceCode){
+function generalCheck(entries, isContactField, useSequenceCode) {
   var codigosArrayLib = [];
 
   for (var i = 0; i < entries.length; i++) {
