@@ -40,7 +40,7 @@ function toReturn() {
 
 
 ////Funtion
-function entryConsistency(entry) {
+function entryConsistency(entry, contactField) {
 
   //checkNoPicture
   if(entry.field("Capa").length == 0){
@@ -49,10 +49,12 @@ function entryConsistency(entry) {
     entry.set("checkNoPicture", 0);
   }
 
+  var semPessoa = contactField ? entry.field("Emprestado para") == null : entry.field("Emprestado para").length == 0;
+  
   //checkLendInconsistence
   if( entry.field("Situação") == 'Emprestado'){
 
-    if( entry.field("Emprestado para").length == 0 || entry.field("Data de empréstimo") == null ){
+    if( semPessoa || entry.field("Data de empréstimo") == null ){
       entry.set("checkLendInconsistence", 1);
     }else{
       entry.set("checkLendInconsistence", 0);
@@ -60,7 +62,7 @@ function entryConsistency(entry) {
 
   }else{
 
-    if( entry.field("Emprestado para").length > 0 || entry.field("Data de empréstimo") != null ){
+    if( !semPessoa || entry.field("Data de empréstimo") != null ){
       entry.set("checkLendInconsistence", 1);
     }else{
       entry.set("checkLendInconsistence", 0);
@@ -85,18 +87,30 @@ function entryConsistency(entry) {
 
 
 ////Funtion
-function generalCheck(entries){
+function generalCheck(entries, contactField, useSequenceCode){
   var codigosArrayLib = [];
 
   for (var i = 0; i < entries.length; i++) {
 
     //Load codigosArrayLib
-    entryConsistency(entries[i]);
+    entryConsistency(entries[i], contactField);
 
     //Load codigosArrayLib
     codigosArrayLib.push(parseInt(entries[i].field("Código")));
   }
 
+  //checkUnique
+  if(useSequenceCode){
+    codeSequenceCheck(codigosArrayLib);
+  }
+  
+  message("General Check - Concluído!");
+}
+
+
+////Funtion
+function codeSequenceCheck(codigosArrayLib){
+  
   //checkUnique
   codigosArrayLib.sort(sortNumber);
   var index = 0;
