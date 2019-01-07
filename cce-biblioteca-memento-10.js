@@ -106,14 +106,14 @@ function generalCheck(isContactField, useSequenceCode) {
     //Load codigosArrayLib
     if(useSequenceCode){
       codigosArrayLib.push(parseInt(entries[i].field("Código")));
-	}
+    }else{
+      entries[i].set("checkCodigoInconsistence", 0);  
+    }
   }
 
   //checkUnique
   if(useSequenceCode){
     codeSequenceCheck(entries, codigosArrayLib);
-  }else{
-    entries[i].set("checkCodigoInconsistence", 0);  
   }
   
   message("General Check - Concluído!");
