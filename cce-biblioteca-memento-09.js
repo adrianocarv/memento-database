@@ -2,45 +2,40 @@
 ////FUNTIONS
 ////
 
-////Funtion
-function uniqueCode(codeFieldName) {
-  var myField = entry().field(codeFieldName);       // Value of myField
-  var entries = lib().entries();                    // Array containing all entries
- 
-  var unique = true;                                // Presuming, initially
-  for (var i = 0; i < entries.length; i++) {        // Loop through all entries
-	if (entries[i].field(codeFieldName) == myField) // If there is ever a match,
-		unique = false;                            	// Remember it
+//Function
+function getFirstEntry(entryFieldName, entryFieldValue) {
+  var entries = lib().entries();
+  for (var i = 0; i < entries.length; i++) {
+    if(entries[i].field(entryFieldName) == entryFieldValue){
+      return entries[i];
+    }
   }
- 
-  if (!unique) { // If not unique,
-	cancel(); // Disallow the save
-	message("Código já existente.");  // Tell the user
-  }
+  return null;
 }
 
 
-////Funtion
-function toReturn() {
-  if( entry().field("Situação") == 'Disponível' ){
-    entry().set("Emprestado para", null);
-    entry().set("Data de empréstimo", null);
-    entry().set("Paradeiro", "");
-    entry().set("Histórico do paradeiro", null);
+//Function
+function toReturn(entry, isContactField) {
+  if( entry.field("Situação") == 'Disponível' ){
+
+    if(!isContactField) entry.set("Emprestado para", null);
+    entry.set("Data de empréstimo", null);
+    entry.set("Paradeiro", "");
+    entry.set("Histórico do paradeiro", null);
   }
 
   //Paradeiro
-  if( entry().field("Paradeiro").length > 0){
-    var historico = entry().field("Histórico do paradeiro");
-    var registro = todayAsString() + ". " + entry().field("Paradeiro");
+  if( entry.field("Paradeiro").length > 0){
+    var historico = entry.field("Histórico do paradeiro");
+    var registro = todayAsString() + ". " + entry.field("Paradeiro");
     var historico = registro + "\n" + historico;
-    entry().set("Histórico do paradeiro", historico);
+    entry.set("Histórico do paradeiro", historico);
   }
 }
 
 
-////Funtion
-function entryConsistency(entry, contactField) {
+//Function
+function entryConsistency(entry, isContactField) {
 
   //checkNoPicture
   if(entry.field("Capa").length == 0){
@@ -49,7 +44,7 @@ function entryConsistency(entry, contactField) {
     entry.set("checkNoPicture", 0);
   }
 
-  var semPessoa = contactField ? entry.field("Emprestado para") == null : entry.field("Emprestado para").length == 0;
+  var semPessoa = isContactField ? entry.field("Emprestado para") == null : entry.field("Emprestado para").length == 0;
   
   //checkLendInconsistence
   if( entry.field("Situação") == 'Emprestado'){
@@ -62,17 +57,29 @@ function entryConsistency(entry, contactField) {
 
   }else{
 
-    if( !semPessoa || entry.field("Data de empréstimo") != null ){
-      entry.set("checkLendInconsistence", 1);
-    }else{
+    //if( !semPessoa || entry.field("Data de empréstimo") != null ){
+    //  entry.set("checkLendInconsistence", 1);
+    //}else{
+    //  entry.set("checkLendInconsistence", 0);
+    //}
+    if( (isContactField || semPessoa) && entry.field("Data de empréstimo") == null ){
       entry.set("checkLendInconsistence", 0);
+    }else{
+      entry.set("checkLendInconsistence", 1);
     }
 
   }
 
+  //group all inconsistence
+  if(entry.field("checkNoPicture") == 1 || entry.field("checkLendInconsistence") == 1 || entry.field("checkCodigoInconsistence") == 1 ){
+    entry.set("checkAnyInconsistence", 1);
+  }else{
+    entry.set("checkAnyInconsistence", 0);
+  }
+
   //normalize blank Paradeiro
   if( entry.field("Paradeiro") == null ){
-    entry().set("Paradeiro", "");
+    entry.set("Paradeiro", "");
   }
   
   //checkEmprestimoMais60Dias
@@ -86,17 +93,20 @@ function entryConsistency(entry, contactField) {
 }
 
 
-////Funtion
-function generalCheck(entries, contactField, useSequenceCode){
+//Function
+function generalCheck(isContactField, useSequenceCode) {
+  var entries = lib().entries();
   var codigosArrayLib = [];
 
   for (var i = 0; i < entries.length; i++) {
 
     //Load codigosArrayLib
-    entryConsistency(entries[i], contactField);
+    entryConsistency(entries[i], isContactField);
 
     //Load codigosArrayLib
-    codigosArrayLib.push(parseInt(entries[i].field("Código")));
+    if(useSequenceCode){
+      codigosArrayLib.push(parseInt(entries[i].field("Código")));
+	}
   }
 
   //checkUnique
@@ -108,7 +118,7 @@ function generalCheck(entries, contactField, useSequenceCode){
 }
 
 
-////Funtion
+//Function
 function codeSequenceCheck(codigosArrayLib){
   
   //checkUnique
@@ -128,12 +138,24 @@ function codeSequenceCheck(codigosArrayLib){
 	  index++;
     }
   }
-
-  message("General Check - Concluído!");
 }
 
 
-////Funtion
+//Function
+function setCheckCodigoInconsistence(codigo, value) {
+
+  var entries = lib().entries();
+
+  for (var i = 0; i < entries.length; i++) {
+    if(entries[i].field("Código") == codigo){
+      entries[i].set("checkCodigoInconsistence", value);
+      break;
+    }
+  }
+}
+
+
+//Function
 function todayAsString() {
   var today = new Date();
   var dd = today.getDate();
@@ -151,7 +173,7 @@ function todayAsString() {
 }
 
 
-////Funtion
+//Function
 function isDataEmprestimoAnterior(entry, diasAntes){
   var dataField = entry.field("Data de empréstimo");
   var dataEmprestimo = dataField == null ? null : moment(dataField);
@@ -162,34 +184,13 @@ function isDataEmprestimoAnterior(entry, diasAntes){
 }
 
 
-////Funtion
-function comparaData(a, b){
-
-  if(a.date() == b.date() && a.month() == b.month() && a.year() == b.year())
-    return 0;
-
-  return a < b ? -1 : 1;
-}
-
-
-//Function: sortNumber
+//Function
 function sortNumber(a,b) {
     return a - b;
 }
 
 
-//Function: setCheckCodigoInconsistence
-function setCheckCodigoInconsistence(codigo, value) {
-  for (var i = 0; i < entries.length; i++) {
-    if(entries[i].field("Código") == codigo){
-      entries[i].set("checkCodigoInconsistence", value);
-      break;
-    }
-  }
-}
-
-
-////Funtion
+//Function
 function comparaData(a, b){
 
   if(a.date() == b.date() && a.month() == b.month() && a.year() == b.year())
