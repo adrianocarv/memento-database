@@ -246,7 +246,7 @@ function setStatusDataProximaAcao(entry) {
   } else if (diasProximaAcao < -1 ){
     text = "🚫 Há " + (diasProximaAcao * -1) + " dias";
   } else if (diasProximaAcao < 7 ){
-    text = moment(diasProximaAcao).format('ddd');
+    text = getDiaSemanaPtBr(moment(diasProximaAcao).format('ddd'));
   }
 
   //Aniversário 
@@ -263,6 +263,20 @@ function setStatusDataProximaAcao(entry) {
   
   entry.set("statusDataProximaAcao", text);
 
+}
+
+////Funtion
+function getDiaSemanaPtBr(dayOfWeek) {
+  switch (dayOfWeek) {
+    case 'Sun': return "Domingo";
+    case 'Mon': return "Segunda";
+    case 'Tue': return "Terça";
+    case 'Wed': return "Quarta";
+    case 'Thu': return "Quinta";
+    case 'Fri': return "Sexta";
+    case 'Sat': return "Sábado";
+    default: return dayOfWeek;
+  }
 }
 
 ////Funtion
