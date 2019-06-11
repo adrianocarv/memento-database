@@ -106,7 +106,11 @@ function atualizarProximaAcao(entry) {
   }
 
   //G) Atualiza a diferença de dias entre hoje e a data da próxima ação
+  dataProximaAcao = moment(entry.field("Data da próxima ação"));
   var diasProximaAcao = moment(entry.field("Data da próxima ação")).diff(moment(),'days');
+  if(diasProximaAcao == 0 && comparaData(moment(), dataProximaAcao) != 0){
+    diasProximaAcao++;
+  }
   entry.set("diasProximaAcao", diasProximaAcao);
 
 }
