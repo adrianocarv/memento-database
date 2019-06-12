@@ -15,32 +15,10 @@ function getFirstEntry(entryFieldName, entryFieldValue) {
 
 
 //Function
-function uniqueCode(entry, codeFieldName) {
-  var myField = entry.field(codeFieldName);       // Value of myField
-  var entries = lib().entries();                    // Array containing all entries
- 
-  var unique = true;                                // Presuming, initially
-  for (var i = 0; i < entries.length; i++) {        // Loop through all entries
-	if (entries[i].field(codeFieldName) == myField) // If there is ever a match,
-		unique = false;                            	// Remember it
-  }
- 
-  if (!unique) { // If not unique,
-	cancel(); // Disallow the save
-	message("Código já existente.");  // Tell the user
-  }
-}
-
-
-//Function
 function toReturn(entry, isContactField) {
   if( entry.field("Situação") == 'Disponível' ){
 
-    if(isContactField){
-      entry.field("Emprestado para").length = 0;
-    }else{
-      entry.set("Emprestado para", null);
-    }
+    if(!isContactField) entry.set("Emprestado para", null);
     entry.set("Data de empréstimo", null);
     entry.set("Paradeiro", "");
     entry.set("Histórico do paradeiro", null);
@@ -79,20 +57,17 @@ function entryConsistency(entry, isContactField) {
 
   }else{
 
-    if( !semPessoa || entry.field("Data de empréstimo") != null ){
-      entry.set("checkLendInconsistence", 1);
-    }else{
+    if( (isContactField || semPessoa) && entry.field("Data de empréstimo") == null ){
       entry.set("checkLendInconsistence", 0);
+    }else{
+      entry.set("checkLendInconsistence", 1);
     }
 
   }
 
   //group all inconsistence
-  if(entry.field("checkNoPicture") == 1 || entry.field("checkLendInconsistence") == 1 || entry.field("checkCodigoInconsistence") == 1 ){
-    entry.set("checkAnyInconsistence", 1);
-  }else{
-    entry.set("checkAnyInconsistence", 0);
-  }
+  var inconsistences = entry.field("checkNoPicture") + entry.field("checkLendInconsistence") + entry.field("checkCodigoInconsistence");
+  entry.set("checkAnyInconsistence", inconsistences);
 
   //normalize blank Paradeiro
   if( entry.field("Paradeiro") == null ){
@@ -111,7 +86,7 @@ function entryConsistency(entry, isContactField) {
 
 
 //Function
-function generalCheck(isContactField, useSequenceCode, codeFieldName) {
+function generalCheck(isContactField, useSequenceCode) {
   var entries = lib().entries();
   var codigosArrayLib = [];
 
@@ -122,13 +97,15 @@ function generalCheck(isContactField, useSequenceCode, codeFieldName) {
 
     //Load codigosArrayLib
     if(useSequenceCode){
-      codigosArrayLib.push(parseInt(entries[i].field(codeFieldName)));
-	}
+      codigosArrayLib.push(parseInt(entries[i].field("Código")));
+    }else{
+      entries[i].set("checkCodigoInconsistence", 0);  
+    }
   }
 
   //checkUnique
   if(useSequenceCode){
-    codeSequenceCheck(entries, codeFieldName, codigosArrayLib);
+    codeSequenceCheck(entries, codigosArrayLib);
   }
   
   message("General Check - Concluído!");
@@ -136,27 +113,28 @@ function generalCheck(isContactField, useSequenceCode, codeFieldName) {
 
 
 //Function
-function codeSequenceCheck(entries, codeFieldName, codigosArrayLib){
+function codeSequenceCheck(entries, codigosArrayLib){
   
   //checkUnique
   codigosArrayLib.sort(sortNumber);
   var index = 0;
+  var inconsistenceValue = 0;
   for (var i = 0; i < codigosArrayLib.length; i++) {
 
     index++;
 
-    if(codigosArrayLib[i] == index){
-	  setCheckCodigoInconsistence(codeFieldName, codigosArrayLib[i],0);
-    }else if(codigosArrayLib[i] < index){ //código duplicado
-	  setCheckCodigoInconsistence(codeFieldName, codigosArrayLib[i],1);
+    if(codigosArrayLib[i] < index){ //código duplicado
+	  inconsistenceValue = 1;
   	  index--;
     }else if(codigosArrayLib[i] > index){ //lacuna de código
-	  setCheckCodigoInconsistence(codeFieldName, codigosArrayLib[i],1);
+	  inconsistenceValue = 1;
 	  index++;
-    }
+    }else{
+	  inconsistenceValue = 0;
+	}
+	
+	entries[i].set("checkCodigoInconsistence", inconsistenceValue);  
   }
-
-  message("General Check - Concluído!");
 }
 
 
@@ -192,17 +170,6 @@ function isDataEmprestimoAnterior(entry, diasAntes){
 //Function
 function sortNumber(a,b) {
     return a - b;
-}
-
-
-//Function
-function setCheckCodigoInconsistence(entries, codeFieldName, codigo, value) {
-  for (var i = 0; i < entries.length; i++) {
-    if(entries[i].field(codeFieldName) == codigo){
-      entries[i].set("checkCodigoInconsistence", value);
-      break;
-    }
-  }
 }
 
 
