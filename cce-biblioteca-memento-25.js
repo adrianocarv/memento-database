@@ -131,7 +131,7 @@ function generalCheck(isContactField, useSequenceCode) {
     zerarInfo(entries[i]);
 
     if(i % 25 == 0)
-      message("Registro " + (i+1) + " de " + entries.length + "...");
+      message("Registro " + i + " de " + entries.length + "...");
   }
 
   //checkUnique
@@ -175,7 +175,7 @@ function codeSequenceCheck(entries, codigosArrayLib){
     entries[i].set("checkAnyInconsistence", entries[i].field("checkAnyInconsistence") + inconsistenceValue);
 	
     if(i % 100 == 0)
-      message("Código " + (i+1) + " de " + entries.length + "...");
+      message("Código " + i + " de " + entries.length + "...");
   }
 }
 

@@ -39,7 +39,7 @@ function generalCheck() {
     totalOcorrenciasContatoAno += getFrequenciaPorAno(entries[i]);
 
     if(i % 25 == 0)
-      message("Registro " + (i+1) + " de " + entries.length + "...");
+      message("Registro " + i + " de " + entries.length + "...");
   }
 
   //atualizarInfo
