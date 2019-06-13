@@ -174,7 +174,7 @@ function codeSequenceCheck(entries, codigosArrayLib){
 	entries[i].set("checkCodigoInconsistence", inconsistenceValue); 
     entries[i].set("checkAnyInconsistence", entries[i].field("checkAnyInconsistence") + inconsistenceValue);
 	
-    if(i % 25 == 0)
+    if(i % 100 == 0)
       message("Código " + (i+1) + " de " + entries.length + "...");
   }
 }
