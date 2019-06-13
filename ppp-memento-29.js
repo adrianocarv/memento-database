@@ -2,6 +2,56 @@
 ////FUNTIONS
 ////
 
+//Function
+function entryConsistency(entry) {
+
+  //1. realizarChecagens
+  realizarChecagens(entry);
+
+  //2. atualizarProximaAcao
+  atualizarProximaAcao(entry);
+
+  //3. atualizarStatus
+  atualizarStatus(entry);
+
+}
+
+//Function
+function generalCheck() {
+
+  message("General Check - Starting...");
+
+  var entries = lib().entries();
+  var totalOcorrenciasContatoAno = 0;
+
+  message("Registros carregados. Percorrendo...");
+
+  var inicio = moment();
+  for (var i = 0; i < entries.length; i++) {
+
+    //entryConsistency
+    entryConsistency(entries[i]);
+
+    //zerarInfo
+    zerarInfo(entries[i]);
+
+    //incrementa ocorrências por ano do contato
+    totalOcorrenciasContatoAno += getFrequenciaPorAno(entries[i]);
+
+    if(i % 25 == 0)
+      message("Registro " + (i+1) + " de " + entries.length + "...");
+  }
+
+  //atualizarInfo
+  atualizarInfo(entries[1], totalOcorrenciasContatoAno, inicio, fim);
+  var fim = moment();
+
+  //atualizarInfo
+  atualizarInfo(entries[1], inicio, fim);
+
+  message("General Check - Concluído!");
+}
+
 ////Funtion
 function zerarInfo(entry) {
   entry.set("infoMediaContatoPorDia", null);
@@ -106,7 +156,9 @@ function atualizarProximaAcao(entry) {
   }
 
   //G) Atualiza a diferença de dias entre hoje e a data da próxima ação
-  var diasProximaAcao = moment(entry.field("Data da próxima ação")).diff(moment(),'days') + 1;
+  dataProximaAcao = moment(entry.field("Data da próxima ação")).startOf('day');
+  var hoje = moment().startOf('day');
+  var diasProximaAcao = dataProximaAcao.diff(hoje,'days');
   entry.set("diasProximaAcao", diasProximaAcao);
 
 }
@@ -246,12 +298,12 @@ function setStatusDataProximaAcao(entry) {
   } else if (diasProximaAcao < -1 ){
     text = "🚫 Há " + (diasProximaAcao * -1) + " dias";
   } else if (diasProximaAcao < 7 ){
-    text = getDiaSemanaPtBr(moment(diasProximaAcao).format('ddd'));
+    text = getDiaSemanaPtBr(moment(dataProximaAcao).format('ddd'));
   }
 
   //Aniversário 
   var proximoNiver = getProximaDataAniversario(entry);
-  if( proximoNiver != null && comparaData(proximoNiver, dataProximaAcao) == 0 ){
+  if( proximoNiver != null && diasProximaAcao < 7 && comparaData(proximoNiver, dataProximaAcao) == 0 ){
     var ano = moment(entry.field("Data de nascimento")).year();
     if(ano == 1900){
       text += ", Feliz aniversário! 🎂";

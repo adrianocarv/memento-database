@@ -112,6 +112,8 @@ function generalCheck(isContactField, useSequenceCode) {
   var entries = lib().entries();
   var codigosArrayLib = [];
 
+  message("Registros carregados. Percorrendo...");
+
   var inicio = moment();
   for (var i = 0; i < entries.length; i++) {
 
@@ -128,6 +130,8 @@ function generalCheck(isContactField, useSequenceCode) {
     //zerarInfo
     zerarInfo(entries[i]);
 
+    if(i % 25 == 0)
+      message("Registro " + (i+1) + " de " + entries.length + "...");
   }
 
   //checkUnique
@@ -137,7 +141,7 @@ function generalCheck(isContactField, useSequenceCode) {
   var fim = moment();
 
   //atualizarInfo
-  //atualizarInfo(entries[1], inicio, fim);
+  atualizarInfo(entries[1], inicio, fim);
 
   
   message("General Check - Concluído!");
@@ -168,8 +172,10 @@ function codeSequenceCheck(entries, codigosArrayLib){
 	}
 	
 	entries[i].set("checkCodigoInconsistence", inconsistenceValue); 
-    var anyInconsistence = entry.field("checkAnyInconsistence") == null ? 0 : entry.field("checkAnyInconsistence");
-    entries[i].set("checkAnyInconsistence", anyInconsistence + inconsistenceValue);
+    entries[i].set("checkAnyInconsistence", entries[i].field("checkAnyInconsistence") + inconsistenceValue);
+	
+    if(i % 25 == 0)
+      message("Código " + (i+1) + " de " + entries.length + "...");
   }
 }
 
